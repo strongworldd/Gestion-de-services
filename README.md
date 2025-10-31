@@ -1,0 +1,74 @@
+# TP – Refactoring “Bonnes pratiques de conception” (Version Go)
+
+## 🎯 Objectif du projet
+Ce projet consiste à **refondre une application existante** simulant un petit système de gestion de services et de réservations, en appliquant les **bonnes pratiques de conception et de développement** vues en cours.
+
+L’application permet :
+- de s’identifier par **email** (sans mot de passe, session simulée),
+- de consulter la **liste des services** et leurs créneaux,
+- de **réserver** un créneau disponible,
+- de **consulter et annuler** ses réservations,
+- et pour un administrateur, d’**ajouter** ou **supprimer** des services et des créneaux.
+
+---
+
+## ⚙️ Choix technologique : Go (Golang)
+
+### Pourquoi Go ?
+Le langage **Go** est particulièrement adapté à ce type de refactoring pour plusieurs raisons :
+
+- 🧩 **Simplicité et lisibilité** : la syntaxe claire de Go favorise la mise en place de bonnes pratiques et la lisibilité du code.
+- ⚙️ **Conception modulaire native** : la gestion des packages (`internal/`, `cmd/`, etc.) permet de séparer facilement les couches (HTTP, logique métier, données).
+- 🚀 **Exécution rapide** : Go compile en un **binaire unique**, idéal pour un monolithe léger et performant.
+- 🧱 **Architecture naturelle en couches** : la structuration par packages s’intègre parfaitement à un modèle **monolithique modulaire**.
+- 🧪 **Outils intégrés** : `go fmt`, `go vet`, `go test`, `golangci-lint` permettent d’assurer la **qualité du code** sans dépendances externes lourdes.
+- 💡 **Simplicité de déploiement** : pas besoin de serveur d’application externe — Go dispose de sa propre librairie HTTP.
+
+En somme, Go favorise un **code propre, rapide et bien structuré**, ce qui correspond parfaitement à l’objectif du TP : améliorer la **qualité et la structure** d’une application sans en complexifier le fonctionnement.
+
+---
+
+## 🧱 Architecture choisie : Monolithique modulaire
+
+### 🧩 Type d’architecture
+
+Le projet adopte une **architecture monolithique modulaire**, inspirée du modèle Clean Architecture.
+
+- **Monolithique** → tout le code (API, logique métier, stockage JSON) est réuni dans une seule application Go.  
+- **Modulaire** → les différentes couches (présentation, métier, données) sont clairement séparées et découplées.
+
+### 💬 Pourquoi ce choix ?
+
+Ce type d’architecture est le plus adapté :
+- à la **simplicité du projet**, qui ne justifie pas la complexité des microservices ;
+- à la **philosophie de Go**, conçu pour des binaires uniques, performants et faciles à déployer ;
+- à la **lisibilité et testabilité** : chaque couche a une responsabilité claire et peut être testée indépendamment.
+
+En résumé, cette approche permet un code **propre, maintenable et évolutif**, tout en restant **léger et rapide à mettre en œuvre**.
+
+---
+
+## 📚 Structure générale
+
+| Couche | Rôle | Exemple de contenu |
+|--------|------|--------------------|
+| **Presentation (HTTP)** | Gère les routes, la validation des requêtes et la réponse JSON | Handlers, middlewares |
+| **Application (Use Cases)** | Contient la logique métier : règles de réservation, validation des créneaux, annulation | BookingService, ServiceService |
+| **Domain (Entités & Interfaces)** | Définit les modèles et les contrats des repositories | Service, Slot, Reservation, User |
+| **Infrastructure (Données & outils)** | Implémente les repositories (JSON) et les utilitaires techniques | Repos JSON, logger, générateur d’ID |
+
+---
+
+## 📁 Arborescence simplifiée
+
+```text
+.
+├─ cmd/
+│  └─ server/              # Point d'entrée principal (main.go)
+├─ internal/
+│  ├─ domain/              # Entités + interfaces (ports)
+│  ├─ app/                 # Logique métier (use cases)
+│  ├─ repo/                # Accès aux données (implémentation JSON)
+│  ├─ http/                # Routes, handlers, middlewares
+│  └─ platform/            # Config, logs, clock, id, etc.
+└─ web/                    # (Optionnel) Front statique
