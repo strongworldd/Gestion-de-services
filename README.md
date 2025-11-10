@@ -48,17 +48,6 @@ En résumé, cette approche permet un code **propre, maintenable et évolutif**,
 
 ---
 
-## 📚 Structure générale
-
-| Couche | Rôle | Exemple de contenu |
-|--------|------|--------------------|
-| **Presentation (HTTP)** | Gère les routes, la validation des requêtes et la réponse JSON | Handlers, middlewares |
-| **Application (Use Cases)** | Contient la logique métier : règles de réservation, validation des créneaux, annulation | BookingService, ServiceService |
-| **Domain (Entités & Interfaces)** | Définit les modèles et les contrats des repositories | Service, Slot, Reservation, User |
-| **Infrastructure (Données & outils)** | Implémente les repositories (JSON) et les utilitaires techniques | Repos JSON, logger, générateur d’ID |
-
----
-
 ## 📁 Arborescence simplifiée
 
 ```text
