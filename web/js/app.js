@@ -1,29 +1,61 @@
-// --------- Helpers ---------
+// --------- Helpers de session ---------
 function email() { return localStorage.getItem('email') || ''; }
 function setEmail(v){ localStorage.setItem('email', v || ''); updateWho(); }
 function updateWho(){ document.getElementById('who').textContent = email() || 'aucun'; }
 
-function jsonBox(id, data){
-  document.getElementById(id).textContent = JSON.stringify(data, null, 2);
-}
-
+// --------- Helpers réseau ---------
 async function api(path, opts={}){
-  opts.headers = Object.assign(
-    {'Content-Type':'application/json'},
-    opts.headers||{}
-  );
+  opts.headers = Object.assign({'Content-Type':'application/json'}, opts.headers||{});
   const r = await fetch(path, opts);
   let body = null;
   try { body = await r.json(); } catch(_) {}
   return { ok: r.ok, status: r.status, body };
 }
 
+async function apiGet(url, headers={}) {
+  const r = await fetch(url, { headers });
+  if (!r.ok) return null;
+  try { return await r.json(); } catch { return null; }
+}
+
+// --------- Rendu Services (style app de base) ---------
+function escapeHtml(s){
+  return (s || '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[c]));
+}
+
+function renderServicesFormatted(list, slotsByService) {
+  const box = document.getElementById('svcList');
+  if (!list || !list.length) { box.innerHTML = '<i>(aucun service)</i>'; return; }
+
+  box.innerHTML = list.map((s, i) => {
+    const slots = slotsByService[s.id] || [];
+    const slotsTxt = slots.length
+      ? slots.map(x => x.datetime).join(', ')
+      : '(aucun)';
+    // On n’a pas "type" dans le backend Go — on affiche la description si présente
+    const typeOrDesc = s.description ? `(${escapeHtml(s.description)})` : '';
+    return `
+      <div class="svc-item">
+        <div><b>#${i+1} ${escapeHtml(s.name)} ${typeOrDesc}</b></div>
+        <div>Créneaux: ${escapeHtml(slotsTxt)}</div>
+      </div>
+    `;
+  }).join('');
+}
+
 // --------- DOM refs ---------
 const el = {
   loginForm:     document.getElementById('loginForm'),
   emailInput:    document.getElementById('emailInput'),
+
   btnLoadSvc:    document.getElementById('btnLoadServices'),
-  svcBox:        document.getElementById('svcBox'),
+  svcList:       document.getElementById('svcList'),
 
   bookForm:      document.getElementById('bookForm'),
   slotIdInput:   document.getElementById('slotIdInput'),
@@ -58,11 +90,25 @@ el.loginForm.addEventListener('submit', async (e)=>{
   setEmail(em);
 });
 
+// Charger services (et slots si l’endpoint existe)
 el.btnLoadSvc.addEventListener('click', async ()=>{
-  const {ok, body} = await api('/services', { method:'GET' });
-  jsonBox('svcBox', ok ? body : {error:'fail'});
+  const services = await apiGet('/services');
+  if (!services) { el.svcList.innerHTML = '<i>(erreur chargement)</i>'; return; }
+
+  // tente /services/:id/slots pour chaque service
+  const results = await Promise.allSettled(
+    services.map(s => apiGet(`/services/${s.id}/slots`))
+  );
+  const slotsByService = {};
+  results.forEach((res, idx) => {
+    const svc = services[idx];
+    slotsByService[svc.id] = (res.status === 'fulfilled' && Array.isArray(res.value)) ? res.value : [];
+  });
+
+  renderServicesFormatted(services, slotsByService);
 });
 
+// Réserver
 el.bookForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
   const em = email(); if(!em) return alert('Connecte-toi');
@@ -78,15 +124,17 @@ el.bookForm.addEventListener('submit', async (e)=>{
   alert('Réservation OK: ' + body.id);
 });
 
+// Mes réservations
 el.btnLoadMyRes.addEventListener('click', async ()=>{
   const em = email(); if(!em) return alert('Connecte-toi');
   const {ok, body} = await api('/reservations/me', {
     method:'GET',
     headers:{ 'X-User-Email': em }
   });
-  jsonBox('resBox', ok ? body : {error:'fail'});
+  el.resBox.textContent = ok ? JSON.stringify(body, null, 2) : '[erreur]';
 });
 
+// Annuler
 el.cancelForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
   const em = email(); if(!em) return alert('Connecte-toi');
@@ -99,6 +147,7 @@ el.cancelForm.addEventListener('submit', async (e)=>{
   alert('Annulée');
 });
 
+// Admin: créer service
 el.addSvcForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
   const em = email();
@@ -119,6 +168,7 @@ el.addSvcForm.addEventListener('submit', async (e)=>{
   el.adminOut.textContent = ok ? ('Service créé: ' + body.id) : (body?.error || 'Erreur');
 });
 
+// Admin: ajouter créneau
 el.addSlotForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
   const em = email();

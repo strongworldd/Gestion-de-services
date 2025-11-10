@@ -1,0 +1,64 @@
+/* ---------- Style général ---------- */
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background: #fff;
+}
+
+h1 {
+  margin: 0 0 16px;
+}
+
+/* ---------- Layout ---------- */
+.row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Cartes ---------- */
+.card {
+  border: 1px solid #aaa;
+  padding: 10px;
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px #ddd; /* contour doux */
+  background: #fff;
+  flex: 1;
+  min-width: 280px;
+}
+
+/* ---------- Boutons ---------- */
+.btn {
+  padding: 6px 8px;
+  border: 1px solid #222;
+  background: #f2f2f2;
+  cursor: pointer;
+}
+
+.danger {
+  background: #ffd0d0;
+}
+
+/* ---------- Éléments de service ---------- */
+.svc-item {
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 6px;
+  margin: 8px 0;
+  background: #fafafa;
+}
+
+/* ---------- Texte secondaire ---------- */
+.muted {
+  color: #555;
+}
+
+/* ---------- Zones de texte (préformatées) ---------- */
+pre {
+  background: #f7f7f7;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow-x: auto;
+}

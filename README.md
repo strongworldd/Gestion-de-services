@@ -1,4 +1,4 @@
-# TP – Refactoring “Bonnes pratiques de conception” (Version Go)
+# Application de gestion de services
 
 ## 🎯 Objectif du projet
 Ce projet consiste à **refondre une application existante** simulant un petit système de gestion de services et de réservations, en appliquant les **bonnes pratiques de conception et de développement** vues en cours.
@@ -12,7 +12,7 @@ L’application permet :
 
 ---
 
-## ⚙️ Choix technologique : Go (Golang)
+## ⚙️ Choix technologique : Golang
 
 ### Pourquoi Go ?
 Le langage **Go** est particulièrement adapté à ce type de refactoring pour plusieurs raisons :
@@ -64,11 +64,8 @@ En résumé, cette approche permet un code **propre, maintenable et évolutif**,
 ```text
 .
 ├─ cmd/
-│  └─ server/              # Point d'entrée principal (main.go)
+│  └─ api/
+│     └─ main.go
+├─ data/
 ├─ internal/
-│  ├─ domain/              # Entités + interfaces (ports)
-│  ├─ app/                 # Logique métier (use cases)
-│  ├─ repo/                # Accès aux données (implémentation JSON)
-│  ├─ http/                # Routes, handlers, middlewares
-│  └─ platform/            # Config, logs, clock, id, etc.
-└─ web/                    # (Optionnel) Front statique
+├─ web/
