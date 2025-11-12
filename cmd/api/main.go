@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	httpserver "gestionsvc/internal/transport/http"
 	"gestionsvc/internal/repository"
@@ -10,7 +11,7 @@ import (
 )
 
 func main() {
-	// Repo JSON (dossier data/)
+	// Repo JSON 
 	repo, err := repository.NewJSONStore("data")
 	if err != nil {
 		log.Fatal(err)
@@ -19,19 +20,32 @@ func main() {
 	// Service métier
 	booking := services.NewBookingService(repo)
 
-	// Server HTTP (API)
+	// Serveur HTTP (API)
 	srv := httpserver.NewServer(booking)
 
+	// Routeur principal
+	mux := http.NewServeMux()
+
 	// Front statique (web/)
-	http.Handle("/", http.FileServer(http.Dir("web")))
+	mux.Handle("/", http.FileServer(http.Dir("web")))
+
 	// API
-	http.Handle("/services", srv.Mux)
-	http.Handle("/services/", srv.Mux)
-	http.Handle("/auth/", srv.Mux)
-	http.Handle("/admin/", srv.Mux)
-	http.Handle("/reservations", srv.Mux)
-	http.Handle("/reservations/", srv.Mux)
+	mux.Handle("/services", srv.Mux)
+	mux.Handle("/services/", srv.Mux)     
+	mux.Handle("/auth/", srv.Mux)
+	mux.Handle("/admin/", srv.Mux)
+	mux.Handle("/reservations", srv.Mux) 
+	mux.Handle("/reservations/", srv.Mux) 
+
+	// Serveur avec timeouts
+	server := &http.Server{
+		Addr:         ":8080",
+		Handler:      mux,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
 
 	log.Println("Server listening on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(server.ListenAndServe())
 }
