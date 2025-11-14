@@ -52,14 +52,63 @@ En résumé, cette approche permet un code **propre, maintenable et évolutif**,
 
 ```text
 .
-├─ cmd/
-│  └─ api/
-│     └─ main.go
-├─ data/
-├─ internal/
-├─ web/
+├── cmd/
+│   └── api/
+│       └── main.go
+│
+├── data/
+│   ├── reservations.json
+│   ├── services.json
+│   └── slots.json
+│
+├── internal/
+│   ├── repository/
+│   │   └── jsonstore.go
+│   │
+│   ├── services/
+│   │   └── booking.go
+│   │
+│   └── transport/
+│       └── http/
+│           └── server.go
+│
+├── web/
+│   ├── css/
+│   │   └── style.css
+│   │
+│   ├── js/
+│   │   └── app.js
+│   │
+│   ├── FRONT_GUIDE.md
+│   └── index.html
+│
+├── BACKEND_Documentation.md
+├── go.mod
+└── README.md
 
 ```
+
+## 📦 Prérequis
+
+Avant de lancer l’application, assurez-vous d’avoir :
+
+- **Go 1.22+** installé  
+- Un terminal (PowerShell, CMD, Bash, etc.)
+- Le projet avec la structure suivante :
+
+---
+
+## 🔧 Installation des dépendances
+
+Dans le dossier racine du projet, exécutez :
+
+```
+go mod tidy
+```
+
+Cela installera toutes les dépendances nécessaires et mettra à jour `go.mod` et `go.sum`.
+
+---
 
 ## 🏃 Lancer le serveur backend
 
