@@ -100,7 +100,17 @@ function renderServicesFormatted(services, slotsByService) {
     .map((service, index) => {
       const slots = slotsByService[service.id] || [];
       const slotsText = slots.length
-        ? slots.map((slot) => slot.datetime).join(', ')
+        ? slots
+            .map((slot) => {
+              const slotId = slot.id
+                ? escapeHtml(slot.id)
+                : '[id inconnu]';
+              const slotDateTime = slot.datetime
+                ? escapeHtml(slot.datetime)
+                : '[date inconnue]';
+              return `${slotId} – ${slotDateTime}`;
+            })
+            .join(', ')
         : '(aucun)';
 
       const descriptionText = service.description
