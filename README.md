@@ -59,6 +59,8 @@ En résumé, cette approche permet un code **propre, maintenable et évolutif**,
 ├─ internal/
 ├─ web/
 
+---
+
 ## 🏃 Lancer le serveur backend
 
 Dans le dossier du projet :
