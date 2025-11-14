@@ -82,7 +82,7 @@ En résumé, cette approche permet un code **propre, maintenable et évolutif**,
 │   ├── FRONT_GUIDE.md
 │   └── index.html
 │
-├── BACKEND_Documentation.md
+├── BACKEND_GUIDE.md
 ├── go.mod
 └── README.md
 
