@@ -62,3 +62,21 @@ pre {
   border-radius: 6px;
   overflow-x: auto;
 }
+
+/* ---------- Mes réservations ---------- */
+.res-box {
+  background: #f7f7f7;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  min-height: 44px;
+}
+
+.res-item {
+  padding: 6px 0;
+  border-bottom: 1px solid #e1e1e1;
+}
+
+.res-item:last-child {
+  border-bottom: none;
+}

@@ -86,6 +86,112 @@ function escapeHtml(str) {
   });
 }
 
+// --------- Cache services/slots pour réutilisation ---------
+const svcCache = {
+  services: [],
+  slotsByService: {},
+  slotCatalog: {},
+  slotCatalogLoaded: false,
+};
+
+function updateSlotCatalogCache(services = [], slotsByService = {}) {
+  svcCache.services = services;
+  svcCache.slotsByService = slotsByService;
+  svcCache.slotCatalog = {};
+  svcCache.slotCatalogLoaded = true;
+
+  services.forEach((service) => {
+    const serviceLabel = service.description
+      ? `${service.name} (${service.description})`
+      : service.name;
+    const slots = slotsByService[service.id] || [];
+    slots.forEach((slot) => {
+      if (!slot || !slot.id) return;
+      svcCache.slotCatalog[slot.id] = {
+        serviceLabel,
+        datetime: slot.datetime || '',
+      };
+    });
+  });
+}
+
+async function fetchServicesWithSlots() {
+  const services = await apiGet('/services');
+  if (!Array.isArray(services)) {
+    return null;
+  }
+
+  const results = await Promise.allSettled(
+    services.map((service) => apiGet(`/services/${service.id}/slots`))
+  );
+
+  const slotsByService = {};
+
+  results.forEach((result, index) => {
+    const service = services[index];
+    const isOk = result.status === 'fulfilled' && Array.isArray(result.value);
+    slotsByService[service.id] = isOk ? result.value : [];
+  });
+
+  return { services, slotsByService };
+}
+
+async function ensureSlotCatalog() {
+  if (svcCache.slotCatalogLoaded) {
+    return svcCache.slotCatalog;
+  }
+
+  const svcData = await fetchServicesWithSlots();
+  if (!svcData) {
+    return {};
+  }
+
+  updateSlotCatalogCache(svcData.services, svcData.slotsByService);
+  return svcCache.slotCatalog;
+}
+
+function formatReservation(reservation, slotCatalog = {}) {
+  const slotInfo = slotCatalog[reservation.slotId] || null;
+  const serviceLabel = slotInfo
+    ? slotInfo.serviceLabel
+    : `Créneau ${reservation.slotId || 'inconnu'}`;
+  const slotDatetime = slotInfo && slotInfo.datetime
+    ? slotInfo.datetime
+    : 'Date inconnue';
+  const createdAt = reservation.createdAt
+    ? `Réservé le ${reservation.createdAt}`
+    : '';
+
+  const createdHtml = createdAt
+    ? `<div class="muted">${escapeHtml(createdAt)}</div>`
+    : '';
+
+  return `
+    <div class="res-item">
+      <div><b>${escapeHtml(serviceLabel)}</b></div>
+      <div>Créneau : ${escapeHtml(slotDatetime)}</div>
+      <div class="muted">ID réservation : ${escapeHtml(reservation.id || '')}</div>
+      ${createdHtml}
+    </div>
+  `;
+}
+
+function renderReservations(reservations, slotCatalog) {
+  if (!el.resBox) return;
+
+  if (!Array.isArray(reservations) || reservations.length === 0) {
+    el.resBox.innerHTML = '<i>(aucune réservation)</i>';
+    return;
+  }
+
+  const html = reservations
+    .map((res) => formatReservation(res, slotCatalog))
+    .join('')
+    .trim();
+
+  el.resBox.innerHTML = html || '<i>(créneaux indisponibles)</i>';
+}
+
 // --------- Rendu des services ---------
 
 function renderServicesFormatted(services, slotsByService) {
@@ -122,7 +228,7 @@ function renderServicesFormatted(services, slotsByService) {
           <div>
             <b>#${index + 1} ${escapeHtml(service.name)} ${descriptionText}</b>
           </div>
-          <div>Créneaux : ${escapeHtml(slotsText)}</div>
+          <div>Créneaux : ${slotsText}</div>
         </div>
       `;
     })
@@ -192,27 +298,15 @@ if (el.logoutBtn) {
 
 // --------- Charger les services (et slots si l’endpoint existe) ---------
 el.btnLoadSvc.addEventListener('click', async () => {
-  const services = await apiGet('/services');
+  const svcData = await fetchServicesWithSlots();
 
-  if (!services) {
+  if (!svcData) {
     el.svcList.innerHTML = '<i>(erreur chargement)</i>';
     return;
   }
 
-  // Tente de charger /services/:id/slots pour chaque service
-  const results = await Promise.allSettled(
-    services.map((service) => apiGet(`/services/${service.id}/slots`))
-  );
-
-  const slotsByService = {};
-
-  results.forEach((result, index) => {
-    const service = services[index];
-    const isOk = result.status === 'fulfilled' && Array.isArray(result.value);
-    slotsByService[service.id] = isOk ? result.value : [];
-  });
-
-  renderServicesFormatted(services, slotsByService);
+  updateSlotCatalogCache(svcData.services, svcData.slotsByService);
+  renderServicesFormatted(svcData.services, svcData.slotsByService);
 });
 
 // --------- Réserver ---------
@@ -259,9 +353,18 @@ el.btnLoadMyRes.addEventListener('click', async () => {
     headers: { 'X-User-Email': userEmail },
   });
 
-  el.resBox.textContent = ok
-    ? JSON.stringify(body, null, 2)
-    : '[erreur]';
+  if (!ok) {
+    el.resBox.innerHTML = '<i>(erreur)</i>';
+    return;
+  }
+
+  if (!Array.isArray(body) || body.length === 0) {
+    el.resBox.innerHTML = '<i>(aucune réservation)</i>';
+    return;
+  }
+
+  const slotCatalog = await ensureSlotCatalog();
+  renderReservations(body, slotCatalog);
 });
 
 // --------- Annuler ---------
