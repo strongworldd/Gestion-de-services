@@ -17,6 +17,22 @@ function updateWho() {
   whoElement.textContent = getEmail() || 'aucun';
 }
 
+function logout() {
+  // Supprime l'email stocké
+  localStorage.removeItem('email');
+
+  // Met à jour le texte "Connecté: ..."
+  updateWho();
+
+  // Vide le champ email
+  const emailInput = document.getElementById('emailInput');
+  if (emailInput) {
+    emailInput.value = '';
+  }
+
+  // Recharge la page pour repartir sans utilisateur connecté
+  window.location.reload();
+}
 // --------- Helpers réseau ---------
 
 async function api(path, opts = {}) {
@@ -108,6 +124,7 @@ const el = {
   // Connexion utilisateur
   loginForm: document.getElementById('loginForm'),
   emailInput: document.getElementById('emailInput'),
+  logoutBtn: document.getElementById('logoutBtn'),
 
   // Chargement et affichage des services
   btnLoadSvc: document.getElementById('btnLoadServices'),
@@ -155,6 +172,13 @@ el.loginForm.addEventListener('submit', async (e) => {
 
   setEmail(userEmail);
 });
+
+// Déconnexion
+if (el.logoutBtn) {
+  el.logoutBtn.addEventListener('click', () => {
+    logout();
+  });
+}
 
 // --------- Charger les services (et slots si l’endpoint existe) ---------
 el.btnLoadSvc.addEventListener('click', async () => {
