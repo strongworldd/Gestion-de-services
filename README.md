@@ -69,15 +69,6 @@ Dans le dossier du projet :
 go run ./cmd/api
 ```
 
-```
-Server listening on :8080
-```
-
-L'API REST tourne sur :
-👉 http://localhost:8080/
-
----
-
 ## 🌐 Accéder au frontend
 
 Ouvrir le navigateur et aller sur :
