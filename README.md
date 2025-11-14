@@ -58,3 +58,48 @@ En résumé, cette approche permet un code **propre, maintenable et évolutif**,
 ├─ data/
 ├─ internal/
 ├─ web/
+
+## 🏃 Lancer le serveur backend
+
+Dans le dossier du projet :
+
+```bash
+go run ./cmd/api
+```
+
+```
+Server listening on :8080
+```
+
+L'API REST tourne sur :
+👉 http://localhost:8080/
+
+---
+
+## 🌐 Accéder au frontend
+
+Ouvrir le navigateur et aller sur :
+
+👉 http://localhost:8080/
+
+
+---
+
+
+## 🧹 Vider la pseudo-base JSON (réinitialiser l'app)
+
+Efface les fichiers :
+
+- `data/services.json`
+- `data/slots.json`
+- `data/reservations.json`
+
+Et remetre pour chacun :
+
+```
+[]
+```
+
+Puis relance le serveur.
+
+---
