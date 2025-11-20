@@ -136,11 +136,6 @@ Efface les fichiers :
 - `data/slots.json`
 - `data/reservations.json`
 
-Et remetre pour chacun :
-
-```
-[]
-```
 
 Puis relance le serveur.
 
