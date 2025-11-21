@@ -1,0 +1,20 @@
+[
+  {
+    "id": "svc_1763727119365048000",
+    "name": "Coiffure",
+    "description": "taper",
+    "duration": 30
+  },
+  {
+    "id": "svc_1763727153511850700",
+    "name": "massage",
+    "description": "japonais",
+    "duration": 30
+  },
+  {
+    "id": "svc_1763727174208846300",
+    "name": "repas",
+    "description": "chinois",
+    "duration": 30
+  }
+]
